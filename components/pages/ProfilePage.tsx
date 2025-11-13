@@ -17,30 +17,20 @@ import {
   MapPin,
   Calendar,
   Star,
-  MessageSquare,
-  Clock,
+  // MessageSquare, // Removed as messages are moved
+  // Clock, // Removed as messages are moved
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getMessagesForTrainer, markMessageAsRead } from "@/services/api";
+// import { getMessagesForTrainer, markMessageAsRead } from "@/services/api"; // Removed as messages are moved
 import { useRouter } from "next/navigation";
 
-interface Message {
-  id: string;
-  trainerId: string;
-  trainerName: string;
-  clientId: string;
-  clientName: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  createdAt: string;
-}
+// interface Message { ... } // Removed as messages are moved
 
 export function ProfilePage() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading: authLoading } = useAuth(); // Use authLoading to avoid conflict
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [messages, setMessages] = useState<Message[]>([]); // Removed as messages are moved
+  const [loading, setLoading] = useState(true); // Keep loading for initial auth check
 
   // Redirigir si no está logueado
   useEffect(() => {
@@ -51,44 +41,12 @@ export function ProfilePage() {
   }, [isLoggedIn, router]);
 
   useEffect(() => {
-    if (user?.type === "trainer") {
-      const loadMessages = async () => {
-        try {
-          const trainerMessages = await getMessagesForTrainer(user.id);
-          setMessages(trainerMessages);
-        } catch (error) {
-          console.error("Error loading messages:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadMessages();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
+    setLoading(authLoading); // Set loading based on auth context loading
+  }, [authLoading]);
 
-  const handleMarkAsRead = async (messageId: string) => {
-    try {
-      await markMessageAsRead(messageId);
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg))
-      );
-    } catch (error) {
-      console.error("Error marking message as read:", error);
-    }
-  };
+  // const handleMarkAsRead = async (messageId: string) => { ... }; // Removed as messages are moved
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  // const formatDate = (dateString: string) => { ... }; // Removed as messages are moved
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -221,90 +179,6 @@ export function ProfilePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Sección de mensajes para entrenadores */}
-              {user?.type === "trainer" && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" />
-                      Mensajes de Clientes
-                      {messages.filter((msg) => !msg.read).length > 0 && (
-                        <Badge variant="destructive" className="ml-2">
-                          {messages.filter((msg) => !msg.read).length} nuevos
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription>
-                      Mensajes de clientes interesados en tus servicios
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {loading ? (
-                      <div className="text-center py-4">
-                        <p>Cargando mensajes...</p>
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="text-center py-8">
-                        <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No tienes mensajes aún</p>
-                        <p className="text-sm text-gray-500">
-                          Los mensajes de clientes aparecerán aquí
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {messages
-                          .sort(
-                            (a, b) =>
-                              new Date(b.createdAt).getTime() -
-                              new Date(a.createdAt).getTime()
-                          )
-                          .map((message) => (
-                            <div
-                              key={message.id}
-                              className={`p-4 rounded-lg border ${
-                                !message.read
-                                  ? "bg-blue-50 border-blue-200"
-                                  : "bg-gray-50 border-gray-200"
-                              }`}
-                            >
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-semibold text-gray-900">
-                                    {message.clientName}
-                                  </h4>
-                                  {!message.read && (
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                  <Clock className="h-3 w-3" />
-                                  {formatDate(message.createdAt)}
-                                </div>
-                              </div>
-
-                              <p className="text-gray-700 mb-3">
-                                {message.message}
-                              </p>
-
-                              {!message.read && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleMarkAsRead(message.id)}
-                                  className="text-xs"
-                                >
-                                  Marcar como leído
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
             </>
           )}
         </div>

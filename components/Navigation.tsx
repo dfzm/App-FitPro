@@ -2,14 +2,23 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Search, Calendar, User, LogIn, LogOut } from "lucide-react";
+import {
+  Home,
+  Search,
+  Calendar,
+  User,
+  LogIn,
+  LogOut,
+  LayoutDashboard,
+  MessageSquare,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoginModal } from "@/components/auth/LoginModal";
 
 export function Navigation() {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -20,19 +29,35 @@ export function Navigation() {
     router.push("/");
   };
 
-  const publicNavItems = [
-    { href: "/", icon: Home, label: "Inicio" },
-    { href: "/search", icon: Search, label: "Buscar" },
-  ];
+  let navItems = [];
 
-  const privateNavItems = [
-    { href: "/booking", icon: Calendar, label: "Reservas" },
-    { href: "/profile", icon: User, label: "Perfil" },
-  ];
-
-  const navItems = isLoggedIn
-    ? [...publicNavItems, ...privateNavItems]
-    : publicNavItems;
+  if (isLoggedIn) {
+    if (user?.type === "trainer") {
+      navItems = [
+        {
+          href: "/trainer-dashboard",
+          icon: LayoutDashboard,
+          label: "Dashboard",
+        },
+        { href: "/booking", icon: Calendar, label: "Reservas" },
+        { href: "/trainer-messages", icon: MessageSquare, label: "Mensajes" },
+        { href: "/profile", icon: User, label: "Perfil" },
+      ];
+    } else {
+      // Client user
+      navItems = [
+        { href: "/", icon: Home, label: "Inicio" },
+        { href: "/search", icon: Search, label: "Buscar" },
+        { href: "/booking", icon: Calendar, label: "Reservas" },
+        { href: "/profile", icon: User, label: "Perfil" },
+      ];
+    }
+  } else {
+    navItems = [
+      { href: "/", icon: Home, label: "Inicio" },
+      { href: "/search", icon: Search, label: "Buscar" },
+    ];
+  }
 
   return (
     <>

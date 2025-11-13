@@ -7,8 +7,11 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { supabase } from "@/lib/supabase";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+// import { readUsers, writeUsers } from "@/lib/local-storage";
+// import { v4 as uuidv4 } from "uuid";
+// import { supabase } from "@/lib/supabase";
+// import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface User {
   id: string;
@@ -42,87 +45,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sesión existente
-    const getSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (session?.user) {
-          await loadUserProfile(session.user.id);
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error getting session:", error);
-        setLoading(false);
-      }
-    };
-
-    getSession();
-
-    // Escuchar cambios de autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await loadUserProfile(session.user.id);
-      } else {
-        setUser(null);
-        setIsLoggedIn(false);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    // Simulate session check for local auth
+    setLoading(false);
   }, []);
 
-  const loadUserProfile = async (userId: string) => {
-    try {
-      // Get user profile from profiles table
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+  // const loadUserProfile = async (userId: string) => {
+  //   try {
+  //     // Get user profile from profiles table
+  //     const { data: profile, error } = await supabase
+  //       .from("profiles")
+  //       .select("*")
+  //       .eq("id", userId)
+  //       .single();
 
-      if (error) {
-        console.error("Error loading user profile:", error);
-        setLoading(false);
-        return;
-      }
+  //     if (error) {
+  //       console.error("Error loading user profile:", error);
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      if (profile) {
-        setUser({
-          id: profile.id,
-          name: profile.name,
-          email: profile.email,
-          type: profile.user_type,
-        });
-        setIsLoggedIn(true);
-      }
-    } catch (error) {
-      console.error("Error loading user profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (profile) {
+  //       setUser({
+  //         id: profile.id,
+  //         name: profile.name,
+  //         email: profile.email,
+  //         type: profile.user_type,
+  //       });
+  //       setIsLoggedIn(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error loading user profile:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const login = async (
     email: string,
     password: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        return { success: false, error: error.message };
-      }
+      const data = await response.json();
 
-      return { success: true };
+      if (data.success) {
+        setUser(data.user);
+        setIsLoggedIn(true);
+        // Store user data in session storage for client-side persistence
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: data.error || "Credenciales incorrectas",
+        };
+      }
     } catch (error) {
       console.error("Login error:", error);
       return { success: false, error: "Error inesperado durante el login" };
@@ -136,32 +120,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     type: "client" | "trainer"
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password, type }),
       });
 
-      if (authError) {
-        return { success: false, error: authError.message };
+      const data = await response.json();
+
+      if (data.success) {
+        setUser(data.user);
+        setIsLoggedIn(true);
+        // Store user data in session storage for client-side persistence
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Error en el registro" };
       }
-
-      if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: authData.user.id,
-          name,
-          email,
-          user_type: type,
-        });
-
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-          return { success: false, error: "Error creando perfil de usuario" };
-        }
-      }
-
-      return { success: true };
     } catch (error) {
       console.error("Registration error:", error);
       return { success: false, error: "Error inesperado durante el registro" };
@@ -170,14 +147,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Logout error:", error);
-      }
+      setUser(null);
+      setIsLoggedIn(false);
+      sessionStorage.removeItem("user"); // Clear user data from session storage
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
+
+  // Add a useEffect to load user from session storage on initial load
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setIsLoggedIn(true);
+    }
+    setLoading(false);
+  }, []);
+
+  const router = useRouter();
+  useEffect(() => {
+    if (!loading) {
+      if (isLoggedIn && user) {
+        if (user.type === "trainer") {
+          router.push("/trainer-dashboard");
+        } else {
+          router.push("/");
+        }
+      } else {
+        router.push("/"); // Redirect to home if not logged in
+      }
+    }
+  }, [isLoggedIn, user, loading, router]);
 
   if (loading) {
     return (
