@@ -1,95 +1,45 @@
 import { supabase } from "@/lib/supabase";
+import { demoTrainers } from "@/lib/demo-trainers";
 
-// Initialize default trainers if database is empty
-const initializeDefaultTrainers = async () => {
-  try {
-    const { data: existingTrainers } = await supabase
-      .from("trainers")
-      .select("id")
-      .limit(1);
+const useDemoData =
+  process.env.NEXT_PUBLIC_USE_DEMO_DATA === "true" ||
+  !process.env.NEXT_PUBLIC_USE_DEMO_DATA;
 
-    if (existingTrainers && existingTrainers.length > 0) {
-      return; // Already initialized
-    }
+const toTrainerCard = (trainer) => ({
+  id: trainer.id,
+  name: trainer.name,
+  specialties: trainer.specialties || [],
+  location: trainer.location || "Extremadura",
+  rating:
+    typeof trainer.rating === "number"
+      ? trainer.rating
+      : typeof trainer.review_score === "number"
+      ? trainer.review_score
+      : 4.8,
+  reviews:
+    typeof trainer.review_count === "number"
+      ? trainer.review_count
+      : typeof trainer.reviews === "number"
+      ? trainer.reviews
+      : 24,
+  price: `${trainer.price_per_session ?? trainer.price ?? 35}€/sesión`,
+  image: trainer.avatar_url || trainer.image || "/placeholder.svg",
+  experience: `${trainer.experience_years ?? trainer.experience ?? 5} años`,
+  description:
+    trainer.bio ||
+    trainer.description ||
+    "Entrenador personal especializado en programas personalizados.",
+});
 
-    // Create default trainers
-    const defaultTrainers = [
-      {
-        name: "Carlos Rodríguez",
-        specialties: ["Pérdida de peso", "Fuerza"],
-        location: "Cáceres",
-        price_per_session: 35.0,
-        experience_years: 5,
-        bio: "Especialista en transformaciones corporales y entrenamiento funcional.",
-        avatar_url: "/fitness-trainer-man.png",
-      },
-      {
-        name: "María González",
-        specialties: ["Yoga", "Pilates"],
-        location: "Badajoz",
-        price_per_session: 30.0,
-        experience_years: 7,
-        bio: "Instructora certificada en yoga y pilates con enfoque holístico.",
-        avatar_url: "/yoga-instructor-woman.png",
-      },
-      {
-        name: "Javier Martín",
-        specialties: ["CrossFit", "Funcional"],
-        location: "Cáceres",
-        price_per_session: 40.0,
-        experience_years: 4,
-        bio: "Entrenador de CrossFit nivel 2, especializado en acondicionamiento físico.",
-        avatar_url: "/crossfit-trainer-man.jpg",
-      },
-      {
-        name: "Ana Fernández",
-        specialties: ["Rehabilitación", "Tercera edad"],
-        location: "Mérida",
-        price_per_session: 32.0,
-        experience_years: 8,
-        bio: "Fisioterapeuta y entrenadora especializada en rehabilitación deportiva.",
-        avatar_url: "/physiotherapy-trainer-woman.jpg",
-      },
-      {
-        name: "David López",
-        specialties: ["Boxeo", "Defensa personal"],
-        location: "Badajoz",
-        price_per_session: 38.0,
-        experience_years: 6,
-        bio: "Entrenador de boxeo y artes marciales con experiencia competitiva.",
-        avatar_url: "/boxing-trainer-man.jpg",
-      },
-      {
-        name: "Laura Sánchez",
-        specialties: ["Nutrición deportiva", "Fitness"],
-        location: "Plasencia",
-        price_per_session: 35.0,
-        experience_years: 5,
-        bio: "Nutricionista deportiva y entrenadora personal certificada.",
-        avatar_url: "/nutrition-fitness-trainer-woman.jpg",
-      },
-    ];
-
-    const { data, error } = await supabase
-      .from("trainers")
-      .insert(defaultTrainers)
-      .select();
-
-    if (error) {
-      console.error("Error initializing trainers:", error);
-    } else {
-      console.log("Default trainers initialized successfully");
-    }
-  } catch (error) {
-    console.error("Error in initializeDefaultTrainers:", error);
-  }
-};
+const getDemoTrainerCards = () => demoTrainers.map(toTrainerCard);
 
 // Get all trainers
 export const getTrainers = async () => {
-  try {
-    await initializeDefaultTrainers();
+  if (useDemoData) {
+    return getDemoTrainerCards();
+  }
 
+  try {
     const { data, error } = await supabase
       .from("trainers")
       .select("*")
@@ -98,28 +48,29 @@ export const getTrainers = async () => {
     if (error) {
       console.error("Error fetching trainers:", error);
       return [];
+      return getDemoTrainerCards();
     }
 
-    return data.map((trainer) => ({
-      id: trainer.id,
-      name: trainer.name,
-      specialties: trainer.specialties,
-      location: trainer.location,
-      rating: trainer.rating,
-      reviews: trainer.review_count,
-      price: `${trainer.price_per_session}€/sesión`,
-      image: trainer.avatar_url || "/placeholder.svg",
-      experience: `${trainer.experience_years} años`,
-      description: trainer.bio,
-    }));
+    if (!data || data.length === 0) {
+      return getDemoTrainerCards();
+    }
+
+    return data.map(toTrainerCard);
   } catch (error) {
     console.error("Error in getTrainers:", error);
-    return [];
+    return getDemoTrainerCards();
   }
 };
 
 // Get trainer by ID
 export const getTrainerById = async (id) => {
+  if (useDemoData) {
+    const trainer = getDemoTrainerCards().find(
+      (demoTrainer) => demoTrainer.id === id
+    );
+    return trainer || null;
+  }
+
   try {
     const { data, error } = await supabase
       .from("trainers")
@@ -130,28 +81,25 @@ export const getTrainerById = async (id) => {
     if (error) {
       console.error("Error fetching trainer:", error);
       return null;
+      return getTrainerByIdFromDemo(id);
     }
 
-    return {
-      id: data.id,
-      name: data.name,
-      specialties: data.specialties,
-      location: data.location,
-      rating: data.rating,
-      reviews: data.review_count,
-      price: `${data.price_per_session}€/sesión`,
-      image: data.avatar_url || "/placeholder.svg",
-      experience: `${data.experience_years} años`,
-      description: data.bio,
-    };
+    return toTrainerCard(data);
   } catch (error) {
     console.error("Error in getTrainerById:", error);
-    return null;
+    return getTrainerByIdFromDemo(id);
   }
 };
 
+const getTrainerByIdFromDemo = (id) =>
+  getDemoTrainerCards().find((trainer) => trainer.id === id) || null;
+
 // Search trainers with filters
 export const searchTrainers = async (filters = {}) => {
+  if (useDemoData) {
+    return searchDemoTrainers(filters);
+  }
+
   try {
     let query = supabase.from("trainers").select("*");
 
@@ -167,25 +115,37 @@ export const searchTrainers = async (filters = {}) => {
 
     if (error) {
       console.error("Error searching trainers:", error);
-      return [];
+      return searchDemoTrainers(filters);
     }
 
-    return data.map((trainer) => ({
-      id: trainer.id,
-      name: trainer.name,
-      specialties: trainer.specialties,
-      location: trainer.location,
-      rating: trainer.rating,
-      reviews: trainer.review_count,
-      price: `${trainer.price_per_session}€/sesión`,
-      image: trainer.avatar_url || "/placeholder.svg",
-      experience: `${trainer.experience_years} años`,
-      description: trainer.bio,
-    }));
+    if (!data) {
+      return searchDemoTrainers(filters);
+    }
+
+    return data.map(toTrainerCard);
   } catch (error) {
     console.error("Error in searchTrainers:", error);
-    return [];
+    return searchDemoTrainers(filters);
   }
+};
+
+const searchDemoTrainers = (filters = {}) => {
+  const normalizedLocation = filters.location?.toLowerCase() || "";
+  const normalizedSpecialty = filters.specialty?.toLowerCase() || "";
+
+  return getDemoTrainerCards().filter((trainer) => {
+    const matchesLocation = normalizedLocation
+      ? trainer.location.toLowerCase().includes(normalizedLocation)
+      : true;
+
+    const matchesSpecialty = normalizedSpecialty
+      ? trainer.specialties.some((specialty) =>
+          specialty.toLowerCase().includes(normalizedSpecialty)
+        )
+      : true;
+
+    return matchesLocation && matchesSpecialty;
+  });
 };
 
 // Send message
