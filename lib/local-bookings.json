@@ -1,0 +1,16 @@
+[
+  {
+    "clientId": "b4395159-7da7-492a-9478-0e62a4999ff2",
+    "clientName": "Felipe",
+    "trainerId": "demo-maria-gonzalez",
+    "trainerName": "María González",
+    "date": "2025-11-21",
+    "time": "18:30",
+    "type": "presencial",
+    "notes": "Estas son las notas weeyy",
+    "price": 30,
+    "id": "cobk5tse8",
+    "status": "accepted",
+    "createdAt": "2025-11-20T22:28:17.616Z"
+  }
+]

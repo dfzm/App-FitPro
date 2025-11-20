@@ -1,0 +1,58 @@
+export const trainerCredentials = [
+  {
+    id: "demo-carlos-rodriguez",
+    email: "carlos.rodriguez@fitpro.demo",
+    password: "password123",
+    name: "Carlos Rodríguez",
+    type: "trainer",
+  },
+  {
+    id: "demo-maria-gonzalez",
+    email: "maria.gonzalez@fitpro.demo",
+    password: "password123",
+    name: "María González",
+    type: "trainer",
+  },
+  {
+    id: "demo-javier-martin",
+    email: "javier.martin@fitpro.demo",
+    password: "password123",
+    name: "Javier Martín",
+    type: "trainer",
+  },
+  {
+    id: "demo-ana-fernandez",
+    email: "ana.fernandez@fitpro.demo",
+    password: "password123",
+    name: "Ana Fernández",
+    type: "trainer",
+  },
+  {
+    id: "demo-david-lopez",
+    email: "david.lopez@fitpro.demo",
+    password: "password123",
+    name: "David López",
+    type: "trainer",
+  },
+  {
+    id: "demo-laura-sanchez",
+    email: "laura.sanchez@fitpro.demo",
+    password: "password123",
+    name: "Laura Sánchez",
+    type: "trainer",
+  },
+  {
+    id: "demo-lucia-mateos",
+    email: "lucia.mateos@fitpro.demo",
+    password: "password123",
+    name: "Lucía Mateos",
+    type: "trainer",
+  },
+  {
+    id: "demo-sergio-garcia",
+    email: "sergio.garcia@fitpro.demo",
+    password: "password123",
+    name: "Sergio García",
+    type: "trainer",
+  },
+];

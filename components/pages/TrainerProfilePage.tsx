@@ -31,6 +31,7 @@ import {
   Share2,
 } from "lucide-react";
 import { getTrainerById } from "@/services/api";
+import { BookingModal } from "@/components/booking/BookingModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -57,6 +58,7 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
   const [trainer, setTrainer] = useState<Trainer | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   useEffect(() => {
     const loadTrainer = async () => {
@@ -98,6 +100,14 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
       // Fallback: copiar URL al portapapeles
       navigator.clipboard.writeText(window.location.href);
     }
+  };
+
+  const handleBooking = () => {
+    if (!isLoggedIn) {
+      router.push("/"); // Or show login modal
+      return;
+    }
+    setShowBookingModal(true);
   };
 
   if (loading) {
@@ -283,7 +293,7 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Enviar Mensaje
                     </Button>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={handleBooking}>
                       <Calendar className="h-4 w-4 mr-2" />
                       Reservar Sesión
                     </Button>
@@ -394,6 +404,16 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
           </Card>
         </div>
       </main>
+
+      {trainer && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          trainerId={trainer.id}
+          trainerName={trainer.name}
+          pricePerSession={parseInt(trainer.price.replace(/\D/g, "")) || 35}
+        />
+      )}
     </div>
   );
 }

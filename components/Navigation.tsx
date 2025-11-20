@@ -39,7 +39,11 @@ export function Navigation() {
           icon: LayoutDashboard,
           label: "Dashboard",
         },
-        { href: "/booking", icon: Calendar, label: "Reservas" },
+        {
+          href: "/trainer-dashboard/reservations",
+          icon: Calendar,
+          label: "Reservas",
+        },
         { href: "/trainer-messages", icon: MessageSquare, label: "Mensajes" },
         { href: "/profile", icon: User, label: "Perfil" },
       ];
