@@ -1,34 +1,40 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/contexts/AuthContext"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Navigation } from "@/components/Navigation"
-import { TrainerCard } from "@/components/TrainerCard"
-import Link from "next/link"
-import { MapPin, Star, Users, Calendar, Search } from "lucide-react"
-import { useEffect, useState } from "react"
-import { getTrainers } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Navigation } from "@/components/Navigation";
+import { TrainerCard } from "@/components/TrainerCard";
+import Link from "next/link";
+import { MapPin, Star, Users, Calendar, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getTrainers } from "@/services/api";
 
 export function HomePage() {
-  const { user, isLoggedIn } = useAuth()
-  const [trainers, setTrainers] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user, isLoggedIn } = useAuth();
+  const [trainers, setTrainers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadTrainers = async () => {
       try {
-        const trainerData = await getTrainers()
-        setTrainers(trainerData.slice(0, 6)) // Show first 6 trainers
+        const trainerData = await getTrainers();
+        setTrainers(trainerData.slice(0, 6));
       } catch (error) {
-        console.error("Error loading trainers:", error)
+        console.error("Error loading trainers:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadTrainers()
-  }, [])
+    loadTrainers();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -38,17 +44,24 @@ export function HomePage() {
         <div className="text-center mb-8">
           {isLoggedIn ? (
             <>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">¡Bienvenido, {user?.name}!</h1>
-              <p className="text-gray-600">Encuentra el entrenador personal perfecto en Extremadura</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                ¡Bienvenido, {user?.name}!
+              </h1>
+              <p className="text-gray-600">
+                Encuentra el entrenador personal perfecto en Extremadura
+              </p>
             </>
           ) : (
             <>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">FitPro Connect</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                FitPro Connect
+              </h1>
               <p className="text-xl text-gray-600 mb-4">
                 Conecta con los mejores entrenadores personales de Extremadura
               </p>
               <p className="text-gray-500">
-                Explora nuestros entrenadores certificados en Cáceres, Badajoz y toda la región
+                Explora nuestros entrenadores certificados en Cáceres, Badajoz y
+                toda la región
               </p>
             </>
           )}
@@ -97,9 +110,14 @@ export function HomePage() {
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Entrenadores Destacados</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Entrenadores Destacados
+            </h2>
             <Link href="/search">
-              <Button variant="outline" className="flex items-center gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 bg-transparent"
+              >
                 <Search className="h-4 w-4" />
                 Ver todos
               </Button>
@@ -133,7 +151,9 @@ export function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Buscar Entrenadores</CardTitle>
-                <CardDescription>Encuentra el entrenador perfecto para tus objetivos</CardDescription>
+                <CardDescription>
+                  Encuentra el entrenador perfecto para tus objetivos
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/search">
@@ -145,7 +165,9 @@ export function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Mis Reservas</CardTitle>
-                <CardDescription>Gestiona tus sesiones programadas</CardDescription>
+                <CardDescription>
+                  Gestiona tus sesiones programadas
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/booking">
@@ -160,5 +182,5 @@ export function HomePage() {
         )}
       </main>
     </div>
-  )
+  );
 }
