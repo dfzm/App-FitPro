@@ -5,5 +5,12 @@
     "email": "daniel@gmail.com",
     "password": "daniel123456",
     "type": "trainer"
+  },
+  {
+    "id": "b4395159-7da7-492a-9478-0e62a4999ff2",
+    "name": "Felipe",
+    "email": "felipe@gmail.com",
+    "password": "felipe123456",
+    "type": "client"
   }
 ]

@@ -173,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (user.type === "trainer") {
           router.push("/trainer-dashboard");
         } else {
-          router.push("/");
+          router.push("/client-dashboard");
         }
       } else {
         router.push("/"); // Redirect to home if not logged in

@@ -46,7 +46,11 @@ export function Navigation() {
     } else {
       // Client user
       navItems = [
-        { href: "/", icon: Home, label: "Inicio" },
+        {
+          href: "/client-dashboard",
+          icon: LayoutDashboard,
+          label: "Dashboard",
+        },
         { href: "/search", icon: Search, label: "Buscar" },
         { href: "/booking", icon: Calendar, label: "Reservas" },
         { href: "/profile", icon: User, label: "Perfil" },

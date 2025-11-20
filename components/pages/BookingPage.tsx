@@ -190,7 +190,9 @@ export function BookingPage() {
               <p className="text-gray-600 mb-4">
                 No tienes reservas programadas
               </p>
-              <Button>Buscar Entrenadores</Button>
+              <Button onClick={() => router.push("/search")}>
+                Buscar Entrenadores
+              </Button>
             </CardContent>
           </Card>
         )}
