@@ -7,6 +7,7 @@ import { MapPin, Star, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { BookingModal } from "@/components/booking/BookingModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -30,14 +31,22 @@ interface TrainerCardProps {
 export function TrainerCard({ trainer }: TrainerCardProps) {
   const { isLoggedIn } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"booking" | null>(null);
   const router = useRouter();
 
-  const handleContact = () => {
+  // Handle pending action after login
+  if (isLoggedIn && pendingAction === "booking") {
+    setShowBookingModal(true);
+    setPendingAction(null);
+  }
+
+  const handleBooking = () => {
     if (!isLoggedIn) {
+      setPendingAction("booking");
       setShowLoginModal(true);
     } else {
-      // Redirigir a la página de contacto
-      router.push(`/contact/${trainer.id}`);
+      setShowBookingModal(true);
     }
   };
 
@@ -88,8 +97,8 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={handleContact} className="flex-1">
-              {isLoggedIn ? "Contactar" : "Contactar (Requiere registro)"}
+            <Button onClick={handleBooking} className="flex-1">
+              Reservar
             </Button>
             <Link href={`/trainer/${trainer.id}`}>
               <Button variant="outline" className="flex-1 bg-transparent">
@@ -104,6 +113,14 @@ export function TrainerCard({ trainer }: TrainerCardProps) {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
+      
+      <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          trainerId={trainer.id}
+          trainerName={trainer.name}
+          pricePerSession={parseInt(trainer.price.replace(/\D/g, "")) || 35}
+        />
     </>
   );
 }

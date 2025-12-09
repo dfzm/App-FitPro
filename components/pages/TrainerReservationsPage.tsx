@@ -67,7 +67,7 @@ export function TrainerReservationsPage() {
 
       <Navigation />
       <main className="container mx-auto px-4 py-8">
-       <h1 className="text-3xl font-bold mb-8">Gestión de Reservas</h1>
+         <h1 className="text-3xl font-bold mb-8">Gestión de Reservas</h1>
 
        <div className="grid gap-6">
         {bookings.length === 0 ? (

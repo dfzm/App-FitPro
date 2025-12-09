@@ -167,17 +167,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const router = useRouter();
+  // We need usePathname to check current page
+  // But useRouter doesn't give pathname directly in some versions, let's use window.location if necessary or assume we can import usePathname
+  // importing usePathname at top level first.
+  
   useEffect(() => {
     if (!loading) {
+      // Logic: Only redirect if we are on the home page "/" or explicitly on a login page if we had one.
+      // If we are on a trainer profile /trainer/[id], don't redirect to dashboard.
+      const currentPath = window.location.pathname;
+      
       if (isLoggedIn && user) {
-        if (user.type === "trainer") {
-          router.push("/trainer-dashboard");
-        } else {
-          router.push("/client-dashboard");
+        if (currentPath === "/") {
+          if (user.type === "trainer") {
+            router.push("/trainer-dashboard");
+          } else {
+            router.push("/client-dashboard");
+          }
         }
-      } else {
-        router.push("/"); // Redirect to home if not logged in
-      }
+      } 
+      // Removed the else { router.push("/") } because it forces guests to home if they try to visit a public profile
     }
   }, [isLoggedIn, user, loading, router]);
 

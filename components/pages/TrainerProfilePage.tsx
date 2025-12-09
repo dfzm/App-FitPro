@@ -31,6 +31,7 @@ import {
   Share2,
 } from "lucide-react";
 import { getTrainerById } from "@/services/api";
+import { LoginModal } from "@/components/auth/LoginModal";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -59,6 +60,8 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"booking" | "message" | null>(null);
 
   useEffect(() => {
     const loadTrainer = async () => {
@@ -75,10 +78,21 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
     loadTrainer();
   }, [trainerId]);
 
+  useEffect(() => {
+    if (isLoggedIn && pendingAction) {
+      if (pendingAction === "booking") {
+        setShowBookingModal(true);
+      } else if (pendingAction === "message") {
+        router.push(`/contact/${trainerId}`);
+      }
+      setPendingAction(null);
+    }
+  }, [isLoggedIn, pendingAction, trainerId, router]);
+
   const handleContact = () => {
     if (!isLoggedIn) {
-      // Mostrar modal de login o redirigir
-      router.push("/");
+      setPendingAction("message");
+      setShowLoginModal(true);
       return;
     }
     router.push(`/contact/${trainerId}`);
@@ -104,7 +118,8 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
 
   const handleBooking = () => {
     if (!isLoggedIn) {
-      router.push("/"); // Or show login modal
+      setPendingAction("booking");
+      setShowLoginModal(true);
       return;
     }
     setShowBookingModal(true);
@@ -414,6 +429,11 @@ export function TrainerProfilePage({ trainerId }: TrainerProfilePageProps) {
           pricePerSession={parseInt(trainer.price.replace(/\D/g, "")) || 35}
         />
       )}
+      
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
     </div>
   );
 }

@@ -38,7 +38,10 @@ Este archivo se encarga de la persistencia de los datos de usuario en `local-aut
 
 ### `lib/local-auth.json` (Nuevo Archivo)
 
-Este archivo JSON almacena los datos de los usuarios registrados localmente. Es un array de objetos de usuario.
+Este archivo JSON almacena los datos de los usuarios registrados localmente (tanto entrenadores como clientes). Es un array de objetos de usuario.
+
+### CLIENTES NUEVOS
+El formulario de registro (`/api/auth/register`) está completamente funcional en modo local y escribe directamente en `lib/local-auth.json`. Por lo tanto, puedes crear nuevos clientes desde la interfaz de registro de la aplicación y sus credenciales se guardarán automáticamente en este archivo.
 
 ## Cómo Revertir a Supabase (Para Producción)
 
