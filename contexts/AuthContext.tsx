@@ -164,9 +164,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(true);
     }
     setLoading(false);
+    setLoading(false);
   }, []);
 
   const router = useRouter();
+
+  const checkActiveBookingAndRedirect = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/user/active-booking?userId=${userId}`);
+      const data = await response.json();
+      
+      if (data.success && data.hasActiveBooking) {
+        router.push("/client-dashboard");
+      } else {
+        // If no active booking, stay on Home (do nothing, as we are already on "/" check block)
+        // or ensure we are on home.
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Error checking active booking:", error);
+    }
+  };
   // We need usePathname to check current page
   // But useRouter doesn't give pathname directly in some versions, let's use window.location if necessary or assume we can import usePathname
   // importing usePathname at top level first.
@@ -182,13 +200,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (user.type === "trainer") {
             router.push("/trainer-dashboard");
           } else {
-            router.push("/client-dashboard");
+            // For clients, check if they have an active booking
+            checkActiveBookingAndRedirect(user.id);
           }
         }
       } 
       // Removed the else { router.push("/") } because it forces guests to home if they try to visit a public profile
     }
-  }, [isLoggedIn, user, loading, router]);
+  }, [isLoggedIn, user, loading, router, checkActiveBookingAndRedirect]);
 
   if (loading) {
     return (

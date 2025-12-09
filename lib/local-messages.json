@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1aec071f-",
+    "senderId": "demo-maria-gonzalez",
+    "senderName": "María González",
+    "receiverId": "203dbfe3-836a-4346-8b38-2ae5c52b83a3",
+    "receiverName": "Felipe Perez",
+    "subject": "Hola",
+    "message": "holis como estas",
+    "read": true,
+    "createdAt": "2025-12-09T23:11:16.568Z"
+  }
+]

@@ -12,5 +12,19 @@
     "id": "cobk5tse8",
     "status": "accepted",
     "createdAt": "2025-11-20T22:28:17.616Z"
+  },
+  {
+    "clientId": "203dbfe3-836a-4346-8b38-2ae5c52b83a3",
+    "clientName": "Felipe Perez",
+    "trainerId": "demo-maria-gonzalez",
+    "trainerName": "María González",
+    "date": "2025-12-31",
+    "time": "18:30",
+    "type": "presencial",
+    "notes": "Esto es una nota",
+    "price": 30,
+    "id": "i8sdlsa8p",
+    "status": "accepted",
+    "createdAt": "2025-12-09T21:28:06.160Z"
   }
 ]

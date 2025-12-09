@@ -6,20 +6,74 @@ import { Calendar, Clock, MapPin, User, MessageSquare } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 
 
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getTrainerById } from "@/services/api";
+
 export function ClientDashboardPage() {
-  // Mock data for active hiring/contract
-  const activeContract = {
-    id: "1",
-    trainerName: "Carlos Rodríguez",
-    trainerSpecialty: "Entrenamiento Funcional & Hipertrofia",
-    planName: "Plan Premium - 3 Meses",
-    startDate: "15 Nov 2023",
-    endDate: "15 Feb 2024",
-    status: "active",
-    nextSession: "Mañana, 10:00 AM",
-    sessionsLeft: 24,
-    progress: 15, // percentage
+  const { user } = useAuth();
+  const router = useRouter();
+  const [activeContract, setActiveContract] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadActiveBooking();
+    }
+  }, [user]);
+
+  const loadActiveBooking = async () => {
+    try {
+      // Get booking info
+      const response = await fetch(`/api/user/active-booking?userId=${user?.id}`);
+      const data = await response.json();
+
+      if (data.success && data.hasActiveBooking) {
+        const booking = data.booking;
+        
+        // Get trainer details (we need specialty logic or fetch trainer again)
+        // Since booking has trainerName but not specialty, we might want to fetch trainer or just mock specialty for now if not stored.
+        // Let's try to fetch trainer details to get specialty.
+        let trainerDetails = { specialties: ["Entrenamiento Personal"] };
+        try {
+           const trainerData = await getTrainerById(booking.trainerId);
+           if(trainerData) trainerDetails = trainerData;
+        } catch(e) {
+           console.log("Could not fetch full trainer details");
+        }
+
+        setActiveContract({
+          id: booking.id,
+          trainerId: booking.trainerId, // Add trainerId
+          trainerName: booking.trainerName,
+          trainerSpecialty: trainerDetails.specialties[0] || "General",
+          planName: `Sesión: ${booking.type}`,
+          startDate: new Date(booking.date).toLocaleDateString(),
+          endDate: "N/A", // This is a single session booking system mainly
+          status: "active",
+          nextSession: `${booking.date} ${booking.time}`,
+          sessionsLeft: 1, // Logic for packages not fully impl yet
+          progress: 0,
+        });
+      } else {
+        // Redirect if no active booking (double check safety)
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return <div className="p-8 text-center">Cargando dashboard...</div>;
+  }
+
+  if (!activeContract) {
+    return null; // Should redirect
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -71,14 +125,21 @@ export function ClientDashboardPage() {
                 </div>
 
                 <div className="flex flex-col justify-center gap-3 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 min-w-[200px]">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => router.push(`/contact/${activeContract.trainerId}`)}
+                  >
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Enviar Mensaje
                   </Button>
                   <Button variant="outline" className="w-full">
                     Ver Plan de Entrenamiento
                   </Button>
-                  <Button variant="ghost" className="w-full text-gray-600">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-gray-600"
+                    onClick={() => router.push(`/client-dashboard/contract/${activeContract.id}`)}
+                  >
                     Detalles del Contrato
                   </Button>
                 </div>

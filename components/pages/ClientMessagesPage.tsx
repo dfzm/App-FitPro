@@ -11,8 +11,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, CheckCircle } from "lucide-react";
-
+import { CheckCircle } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 
 interface Message {
@@ -27,7 +26,7 @@ interface Message {
   createdAt: string;
 }
 
-export function TrainerMessagesPage() {
+export function ClientMessagesPage() {
   const { user, isLoggedIn, loading } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,12 +34,12 @@ export function TrainerMessagesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && (!isLoggedIn || user?.type !== "trainer")) {
+    if (!loading && (!isLoggedIn || user?.type !== "client")) {
       router.push("/");
       return;
     }
 
-    if (isLoggedIn && user?.type === "trainer") {
+    if (isLoggedIn && user?.type === "client") {
       fetchMessages();
     }
   }, [isLoggedIn, user, loading, router]);
@@ -54,9 +53,11 @@ export function TrainerMessagesPage() {
       const data = await response.json();
       
       if (data.success) {
-        // Show ALL messages for the trainer (both sent and received)
-        // The API already filters by userId (sender or receiver)
-        setMessages(data.messages);
+        // Filter to only show messages sent TO the client (from trainers)
+        const receivedMessages = data.messages.filter(
+          (msg: any) => msg.receiverId === user.id
+        );
+        setMessages(receivedMessages);
       } else {
         throw new Error(data.error || "Error loading messages");
       }
@@ -105,14 +106,16 @@ export function TrainerMessagesPage() {
     );
   }
 
-  if (!isLoggedIn || user?.type !== "trainer") {
-    return null; // Should be redirected by useEffect
+  if (!isLoggedIn || user?.type !== "client") {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navigation />
-      <main className="container mx-auto" style={{ marginTop: "2rem" }}>
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Mis Mensajes</h1>
+        
         {error && (
           <Card className="mb-4 border-red-500 bg-red-50">
             <CardContent className="p-4 text-red-700">{error}</CardContent>
@@ -122,7 +125,7 @@ export function TrainerMessagesPage() {
         {messages.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center text-gray-600">
-              No tienes mensajes de clientes.
+              No tienes mensajes de entrenadores.
             </CardContent>
           </Card>
         ) : (
@@ -137,14 +140,10 @@ export function TrainerMessagesPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div>
-                      <span>
-                        {message.senderId === user?.id 
-                          ? `Para: ${message.receiverName}` 
-                          : `De: ${message.senderName}`}
-                      </span>
+                      <span>De: {message.senderName}</span>
                       <p className="text-sm font-normal text-gray-500 mt-1">{message.subject}</p>
                     </div>
-                    {!message.read && message.receiverId === user?.id && (
+                    {!message.read && (
                       <span className="text-sm font-medium text-blue-600">
                         Nuevo
                       </span>
@@ -156,7 +155,7 @@ export function TrainerMessagesPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p>{message.message}</p>
-                  {!message.read && message.receiverId === user?.id && (
+                  {!message.read && (
                     <Button
                       onClick={() => handleMarkAsRead(message.id)}
                       variant="outline"

@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, MessageSquare, Check, X } from "lucide-react";
+import { Calendar, Clock, User, MessageSquare, Check, X, FileText } from "lucide-react";
 import { Booking } from "@/lib/local-bookings";
 import { Navigation } from "@/components/Navigation";
 
 
 export function TrainerReservationsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -149,9 +151,21 @@ export function TrainerReservationsPage() {
                         </Button>
                       </>
                     )}
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => router.push(`/message-client/${booking.clientId}`)}
+                    >
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Mensaje
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-gray-600"
+                      onClick={() => router.push(`/trainer-dashboard/contract/${booking.id}`)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Detalles del contrato
                     </Button>
                   </div>
                 </div>

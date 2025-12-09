@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getBookingsForUser } from "@/services/api";
+
 
 interface Booking {
   id: string;
@@ -34,7 +34,7 @@ interface Booking {
   clientName: string;
   date: string;
   time: string;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
+  status: "pending" | "accepted" | "rejected";
   type: "online" | "in-person";
   notes?: string;
   location?: string;
@@ -58,8 +58,11 @@ export function BookingPage() {
 
     const loadBookings = async () => {
       try {
-        const data = await getBookingsForUser(user.id);
-        setBookings(data);
+        const response = await fetch(`/api/bookings?userId=${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setBookings(data.bookings);
+        }
       } catch (error) {
         console.error("Error loading bookings:", error);
       } finally {
@@ -72,13 +75,11 @@ export function BookingPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed":
+      case "accepted":
         return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      case "cancelled":
+      case "rejected":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -87,14 +88,12 @@ export function BookingPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "confirmed":
+      case "accepted":
         return "Confirmada";
       case "pending":
         return "Pendiente";
-      case "completed":
-        return "Completada";
-      case "cancelled":
-        return "Cancelada";
+      case "rejected":
+        return "Rechazada";
       default:
         return status;
     }
@@ -145,7 +144,7 @@ export function BookingPage() {
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <CalendarIcon className="h-4 w-4 text-gray-500" />
                     <span className="text-sm">{formatDate(booking.date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -158,24 +157,19 @@ export function BookingPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  {booking.status === "confirmed" && (
-                    <>
-                      <Button size="sm" variant="outline">
-                        Reagendar
-                      </Button>
-                      <Button size="sm" variant="destructive">
-                        Cancelar
-                      </Button>
-                    </>
+                  {booking.status === "accepted" && (
+                    <Button size="sm" variant="outline">
+                      Ver Detalles
+                    </Button>
                   )}
                   {booking.status === "pending" && (
                     <Button size="sm" variant="outline">
                       Ver Detalles
                     </Button>
                   )}
-                  {booking.status === "completed" && (
-                    <Button size="sm" variant="outline">
-                      Valorar Sesión
+                  {booking.status === "rejected" && (
+                    <Button size="sm" variant="destructive">
+                      Eliminar
                     </Button>
                   )}
                 </div>

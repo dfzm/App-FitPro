@@ -57,6 +57,7 @@ export function Navigation() {
         },
         { href: "/search", icon: Search, label: "Buscar" },
         { href: "/booking", icon: Calendar, label: "Reservas" },
+        { href: "/client-messages", icon: MessageSquare, label: "Mensajes" },
         { href: "/profile", icon: User, label: "Perfil" },
       ];
     }
